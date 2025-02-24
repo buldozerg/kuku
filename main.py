@@ -10,7 +10,7 @@ import os
 TOKEN = os.getenv("TOKEN")
 TON_API_KEY = os.getenv("TON_API_KEY")
 CHECK_TOKEN = os.getenv("CHECK_TOKEN")
-ALLOWED_USERS = list(map(int, os.getenv("ALLOWED_USERS", "").split(',')))
+ALLOWED_USERS = [int(user_id) for user_id in os.getenv("ALLOWED_USERS", "").split(',') if user_id]
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
