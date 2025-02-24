@@ -1,0 +1,5 @@
+aiogram
+httpx
+asyncio
+logging
+python-dotenv
