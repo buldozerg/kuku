@@ -1,0 +1,29 @@
+{
+    "users": [
+        {
+            "username": "@ktotoiznashegochata2",
+            "wallet": "EQDBnJk6gw_ipRiGzeO5DXKoWoLFbp3lqEjEuJCKHQVoZpx2",
+            "balance": 9250000.0
+        },
+        {
+            "username": "@user1",
+            "wallet": "UQBWBU_u2Gw1EQh5a23uj_LQI4lE9sQmbeDoa4oHQ2CWrgBO",
+            "balance": 19412190.127063543
+        },
+        {
+            "username": "@user3",
+            "wallet": "UQAcMTZWxiiaPDBsjQQ0FS7lZPvFFOmG2dbNFLPZEuK6uVxy",
+            "balance": 4010700.0
+        },
+        {
+            "username": "@user5",
+            "wallet": "UQCfRVEsF1AZx_bz7UIs7dWV9u6DP-Hi-sMvtAcuZ5dvifo2",
+            "balance": 3001487.955983132
+        },
+        {
+            "username": "@user7",
+            "wallet": "UQBqmUUSrGbFgB-UMG43UUSqjC6yGqHMWT5IkaMpSO4938oF",
+            "balance": 11661700.348674627
+        }
+    ]
+}
