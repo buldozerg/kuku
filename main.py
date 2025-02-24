@@ -10,6 +10,7 @@ import os
 TOKEN = os.getenv("TOKEN")
 TON_API_KEY = os.getenv("TON_API_KEY")
 CHECK_TOKEN = os.getenv("CHECK_TOKEN")
+ALLOWED_USERS = list(map(int, os.getenv("ALLOWED_USERS", "").split(',')))
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -56,18 +57,30 @@ async def get_wallet_balance(wallet: str) -> float:
 
 @dp.message(Command("add"))
 async def add_user(message: Message):
+    if message.from_user.id not in ALLOWED_USERS:
+        await message.answer("У вас нет прав для использования этой команды.")
+        return
+
     user_state[message.from_user.id] = 'waiting_for_nickname'
     await message.answer("Введите ваш никнейм:")
 
 
 @dp.message(Command("erase"))
 async def erase_user(message: Message):
+    if message.from_user.id not in ALLOWED_USERS:
+        await message.answer("У вас нет прав для использования этой команды.")
+        return
+
     user_state[message.from_user.id] = 'waiting_for_erase_nickname'
     await message.answer("Введите ник пользователя, которого удалить:")
 
 
 @dp.message(Command("check"))
 async def check_users(message: Message):
+    if message.from_user.id not in ALLOWED_USERS:
+        await message.answer("У вас нет прав для использования этой команды.")
+        return
+
     data = load_data()
     users = data["users"]
     if not users:
