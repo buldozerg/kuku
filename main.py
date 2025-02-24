@@ -17,6 +17,7 @@ dp = Dispatcher()
 
 # Глобальные переменные
 user_state = {}
+authenticated_users = set()  # Множество для хранения пользователей с правильным паролем
 last_total_balance = 0
 last_user_balances = {}  # Хранение предыдущих балансов пользователей
 
@@ -31,7 +32,7 @@ def load_data():
 
 
 def save_data(data):
-    """Сохраняет данные в JSON-файл."""
+    """Сохраняет данные в JSON-файле."""
     with open("users.json", "w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
 
@@ -55,73 +56,80 @@ async def get_wallet_balance(wallet: str) -> float:
     return 0.0  # Если токен не найден или произошла ошибка, возвращаем 0
 
 
-async def check_password(message: Message):
-    """Запрашивает пароль у пользователя и проверяет его."""
-    if message.text != ADMIN_PASSWORD:
-        await message.answer("❌ Неверный пароль.")
-        return False
-    return True
+@dp.message(Command("pwd"))
+async def set_password(message: Message):
+    """Запрашивает пароль у пользователя."""
+    user_id = message.from_user.id
+
+    if user_id in authenticated_users:
+        await message.answer("Вы уже авторизованы.")
+        return
+
+    await message.answer("Введите пароль для доступа к командам (не для команд /list и /sum):")
+
+
+@dp.message()
+async def process_password(message: Message):
+    """Обрабатывает введенный пароль и авторизует пользователя."""
+    user_id = message.from_user.id
+
+    if user_id in authenticated_users:
+        return  # Пользователь уже авторизован
+
+    if message.text == ADMIN_PASSWORD:
+        authenticated_users.add(user_id)
+        await message.answer("Пароль верный. Вы авторизованы для использования команд /add, /erase, /check.")
+    else:
+        await message.answer("Извините, пароль неверный.")
 
 
 @dp.message(Command("add"))
 async def add_user(message: Message):
-    # Сначала проверим, находится ли пользователь в ожидании пароля
-    if message.from_user.id not in user_state:
-        user_state[message.from_user.id] = 'waiting_for_password'
-        await message.answer("Введите пароль для продолжения:")
+    user_id = message.from_user.id
+    if user_id not in authenticated_users:
+        await message.answer("Вам нельзя использовать эту команду.")
+        return
 
-    elif user_state[message.from_user.id] == 'waiting_for_password':
-        # Если введён правильный пароль
-        if message.text == ADMIN_PASSWORD:
-            user_state[message.from_user.id] = 'waiting_for_nickname'
-            await message.answer("Пароль принят! Теперь введите ваш никнейм:")
-        else:
-            await message.answer("❌ Неверный пароль.")
-            user_state.pop(message.from_user.id, None)  # Сбрасываем состояние
+    user_state[message.from_user.id] = 'waiting_for_nickname'
+    await message.answer("Введите ваш никнейм:")
+
 
 @dp.message(Command("erase"))
 async def erase_user(message: Message):
-    if message.from_user.id not in user_state:
-        user_state[message.from_user.id] = 'waiting_for_password'
-        await message.answer("Введите пароль для продолжения:")
+    user_id = message.from_user.id
+    if user_id not in authenticated_users:
+        await message.answer("Вам нельзя использовать эту команду.")
+        return
 
-    elif user_state[message.from_user.id] == 'waiting_for_password':
-        if message.text == ADMIN_PASSWORD:
-            user_state[message.from_user.id] = 'waiting_for_erase_nickname'
-            await message.answer("Пароль принят! Теперь введите ник пользователя, которого удалить:")
-        else:
-            await message.answer("❌ Неверный пароль.")
-            user_state.pop(message.from_user.id, None)  # Сбрасываем состояние
+    user_state[message.from_user.id] = 'waiting_for_erase_nickname'
+    await message.answer("Введите ник пользователя, которого удалить:")
+
 
 @dp.message(Command("check"))
 async def check_users(message: Message):
-    if message.from_user.id not in user_state:
-        user_state[message.from_user.id] = 'waiting_for_password'
-        await message.answer("Введите пароль для продолжения:")
+    user_id = message.from_user.id
+    if user_id not in authenticated_users:
+        await message.answer("Вам нельзя использовать эту команду.")
+        return
 
-    elif user_state[message.from_user.id] == 'waiting_for_password':
-        if message.text == ADMIN_PASSWORD:
-            user_state[message.from_user.id] = 'waiting_for_check'
-            data = load_data()
-            users = data["users"]
-            if not users:
-                await message.answer("Нет пользователей для отображения.")
-                return
+    data = load_data()
+    users = data["users"]
+    if not users:
+        await message.answer("Нет пользователей для отображения.")
+        return
 
-            response = "Список пользователей:\n"
-            for user in users:
-                username = user["username"]
-                wallet = user["wallet"]
-                new_balance = await get_wallet_balance(wallet)
-                change = new_balance - user["balance"]
-                user["balance"] = new_balance  # Обновляем баланс
-                response += f"\n🔹 {username}\n💳 {wallet}\n💰 {new_balance} ({change:+.2f})\n"
+    response = "Список пользователей:\n"
+    for user in users:
+        username = user["username"]
+        wallet = user["wallet"]
+        new_balance = await get_wallet_balance(wallet)
+        change = new_balance - user["balance"]
+        user["balance"] = new_balance  # Обновляем баланс
+        response += f"\n🔹 {username}\n💳 {wallet}\n💰 {new_balance} ({change:+.2f})\n"
 
-            save_data(data)
-            await message.answer(response)
-        else:
-            await message.answer("❌ Неверный пароль.")
-            user_state.pop(message.from_user.id, None)  # Сбрасываем состояние
+    save_data(data)
+    await message.answer(response)
+
 
 @dp.message(Command("sum"))
 async def sum_info(message: Message):
