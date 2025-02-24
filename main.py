@@ -10,9 +10,6 @@ import os
 TOKEN = os.getenv("TOKEN")
 TON_API_KEY = os.getenv("TON_API_KEY")
 CHECK_TOKEN = os.getenv("CHECK_TOKEN")
-COMMAND_ADD = os.getenv("COMMAND_ADD")
-COMMAND_ERASE = os.getenv("COMMAND_ERASE")
-COMMAND_CHECK = os.getenv("COMMAND_CHECK")
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -57,19 +54,19 @@ async def get_wallet_balance(wallet: str) -> float:
     return 0.0  # Если токен не найден или произошла ошибка, возвращаем 0
 
 
-@dp.message(Command(COMMAND_ADD))
+@dp.message(Command("add"))
 async def add_user(message: Message):
     user_state[message.from_user.id] = 'waiting_for_nickname'
     await message.answer("Введите ваш никнейм:")
 
 
-@dp.message(Command(COMMAND_ERASE))
+@dp.message(Command("erase"))
 async def erase_user(message: Message):
     user_state[message.from_user.id] = 'waiting_for_erase_nickname'
     await message.answer("Введите ник пользователя, которого удалить:")
 
 
-@dp.message(Command(COMMAND_CHECK))
+@dp.message(Command("check"))
 async def check_users(message: Message):
     data = load_data()
     users = data["users"]
