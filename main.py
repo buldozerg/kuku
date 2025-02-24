@@ -32,7 +32,7 @@ def load_data():
 
 
 def save_data(data):
-    """Сохраняет данные в JSON-файле."""
+    """Сохраняет данные в JSON-файл."""
     with open("users.json", "w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
 
@@ -72,6 +72,10 @@ async def set_password(message: Message):
 async def process_password(message: Message):
     """Обрабатывает введенный пароль и авторизует пользователя."""
     user_id = message.from_user.id
+
+    # Игнорируем ввод пароля, если это не команда /pwd
+    if message.text.startswith('/'):
+        return
 
     if user_id in authenticated_users:
         return  # Пользователь уже авторизован
