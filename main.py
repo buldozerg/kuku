@@ -22,16 +22,18 @@ last_user_balances = {}  # Хранение предыдущих балансо�
 
 def load_data():
     """Загружает данные из JSON-файла."""
-    try:
-        with open("users.json", "r", encoding="utf-8") as file:
+    data_file_path = "/app/users.json"  # Путь к файлу на сервере Railway
+    if os.path.exists(data_file_path):
+        with open(data_file_path, "r", encoding="utf-8") as file:
             return json.load(file)
-    except FileNotFoundError:
+    else:
         return {"users": []}
 
 
 def save_data(data):
     """Сохраняет данные в JSON-файл."""
-    with open("users.json", "w", encoding="utf-8") as file:
+    data_file_path = "/app/users.json"  # Путь к файлу на сервере Railway
+    with open(data_file_path, "w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
 
 
