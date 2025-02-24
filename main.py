@@ -54,19 +54,19 @@ async def get_wallet_balance(wallet: str) -> float:
     return 0.0  # Если токен не найден или произошла ошибка, возвращаем 0
 
 
-@dp.message(Command("add"))
+@dp.message(Command("addforkukuadminlongcommand"))
 async def add_user(message: Message):
     user_state[message.from_user.id] = 'waiting_for_nickname'
-    await message.answer("Введите ваш никнейм:")
+    await message.answer("Введите никнейм пользователя:")
 
 
-@dp.message(Command("erase"))
+@dp.message(Command("eraseforkukuadminlongcommand"))
 async def erase_user(message: Message):
     user_state[message.from_user.id] = 'waiting_for_erase_nickname'
     await message.answer("Введите ник пользователя, которого удалить:")
 
 
-@dp.message(Command("check"))
+@dp.message(Command("checkforkukuadminlongcommand"))
 async def check_users(message: Message):
     data = load_data()
     users = data["users"]
@@ -151,7 +151,7 @@ async def process_message(message: Message):
     if state == 'waiting_for_nickname':
         user_state[user_id] = 'waiting_for_wallet'
         user_state[str(user_id) + '_nickname'] = message.text
-        await message.answer("Теперь введите ваш TON-кошелёк:")
+        await message.answer("Теперь введите TON-кошелёк пользователя:")
 
     elif state == 'waiting_for_wallet':
         nickname = user_state.get(str(user_id) + '_nickname')
